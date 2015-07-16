@@ -1,0 +1,9 @@
+outputSecure : jvm-secure.jar
+outputInsecure : jvm-insecure.jar
+crypto : AES
+outputDir : /Users/John/Desktop/compileTests
+Source: /Users/John/jvm-sgx/builder/src
+ClassHome : /Users/John/jvm-sgx/builder/out
+Signature : /path/to/some/signed/file
+secureClasses:
+reference.InstrumentationHook
