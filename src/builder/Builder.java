@@ -22,22 +22,19 @@ public class Builder {
         int executionMode = validateArgs(args);
         setup();
 
-        /*
         if (executionMode == 0){
             //todo: Show help
             //temp: Load in local pref file
+            System.out.println("Please include a file.  builder.jar <build file>");
         }
 
-        else
-         */
-        if (executionMode == 0) {
+        else if (executionMode == 1) {
             //try to read in the preferences file
             try {
-                //String path = Builder.class.getResource("prefs.txt").getPath();
-                Prefs.getInstance().loadPrefs("prefs.txt"); //todo: Change to args[0] for production-esk dev
-                System.out.println("prefs loaded: " + Prefs.getInstance().getPrefrenece(Prefs.OUTPUT_DIR));
+                Prefs.getInstance().loadPrefs(args[0]); //todo: Change to args[0] for production-esk dev
+                System.out.println("prefs loaded: " + args[0]);
             } catch (FileNotFoundException e) {
-                //System.out.println(args[0] + " is not a file.  Please provide a prefereneces file");
+                System.out.println(args[0] + " is not a file.  Please provide a prefereneces file");
                 e.printStackTrace();
                 return;
             } catch (Prefs.MisformattedPreferences misformattedPreferences) {
@@ -177,12 +174,12 @@ public class Builder {
     }
 
     public static void packageJar(String classes, String output) throws IOException, Prefs.NoSuchPreferenceException, InterruptedException {
-        verifyDir(output);
+        verifyDir(new File(output).getParent());
         ArrayList<File> classFiles = getAllFilesInDir(new File(classes), ".class");
         String packager = "jar";
         ArrayList<String> args = new ArrayList<>();
         args.add(packager);
-        args.add("cf");
+        args.add("cvf");
         args.add(output);
         for (File classFile : classFiles){
             args.add(classFile.getAbsolutePath());
@@ -196,13 +193,25 @@ public class Builder {
         encryptJar(output);
     }
 
-    public static void signJar(String jar, String key){
+    public static void signJar(String jar, String signstore) throws IOException, InterruptedException {
         //todo: Sign the jar
+        /*
+        ArrayList<String> signCommand = new ArrayList<>();
+        signCommand.add("jarsigner");
+        signCommand.add(jar);
+        signCommand.add("-keystore");
+        signCommand.add(signstore);
+        signCommand.add("");
+        System.out.println("Sign command: " + signCommand);
+        String[] array = new String[signCommand.size()];
+        execCommand(signCommand.toArray(array), System.getProperty("user.dir"));
+        */
     }
 
     public static void encryptJar(String jar) throws Prefs.NoSuchPreferenceException {
         //todo: Encrypt the JAR against the users prefered encryption type
         String encryption = Prefs.getPreference(Prefs.CRYPTO);
+        System.out.println("Would encrypt the jar with " + encryption);
     }
 
     public static void setup(){
@@ -224,10 +233,7 @@ public class Builder {
         ArrayList<String> stubLocations = new ArrayList<>();
         for (Class<?> classFile : toSecure){
             //get path
-            String className = classFile.getSimpleName() + ".class";
             String javaName = classFile.getSimpleName() + ".java";
-            String classPath = classFile.getResource(className).getPath();
-            String classFolder = new File(classPath).getParentFile().getAbsolutePath();
 
             //delete class file and replace with stub
             Class<?> clazz = tempLoader.loadClass(classFile.getCanonicalName());
@@ -325,6 +331,7 @@ public class Builder {
         ProcessBuilder builder = new ProcessBuilder(command);
         builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
         builder.directory(new File(directory));
         Process someProcess = builder.start();
         someProcess.waitFor();

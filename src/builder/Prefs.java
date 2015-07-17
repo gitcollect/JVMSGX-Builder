@@ -1,13 +1,12 @@
 package builder;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-/**
- * Created by John on 7/14/15.
- */
 public class Prefs {
     private static Prefs ourInstance = new Prefs();
     private static HashMap<String, Object> preferences;
@@ -20,7 +19,8 @@ public class Prefs {
                                 SECURED_CLASSES = "secureClasses",
                                 PROJECT_SOURCE = "Source",
                                 CLASS_HOME = "ClassHome",
-                                LIBRARIES = "Libs";
+                                LIBRARIES = "Libs",
+                                SIG_NAME = "SignedName";
 
     public static Prefs getInstance() {
         return ourInstance;
