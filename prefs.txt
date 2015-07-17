@@ -1,10 +1,10 @@
-outputSecure : jvm-secure.jar
-outputInsecure : jvm-insecure.jar
+outputSecure : jvm-secure-simple.jar
+outputInsecure : jvm-insecure-simple.jar
 crypto : AES
 outputDir : /Users/John/Desktop/compileTests
-Source: /Users/John/jvm-sgx/builder/src
-ClassHome : /Users/John/jvm-sgx/builder/out
+Source: /Users/John/jvm-sgx/Examples/src
+ClassHome : /Users/John/jvm-sgx/Examples/out/production/Examples/
 Signature : oscarStore
 SignedName : John
 secureClasses:
-reference.InstrumentationHook
+secured.SecuredTalker

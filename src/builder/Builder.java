@@ -16,7 +16,7 @@ public class Builder {
     public static String tempOut = tempDir + "out/";
     public static String stubsDir = tempDir + "stubs/";
     public static String tempStorage = tempDir + "temp/";
-    public static String libsString = "";
+    public static String libsString = "", secureOutput = tempStorage + "secureCompile", insecureOutput = tempStorage + "insecureCompile";
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, Prefs.NoSuchPreferenceException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         int executionMode = validateArgs(args);
@@ -60,13 +60,17 @@ public class Builder {
 
              System.out.println("Number of classes in collection: " + classes.size());
 
+            /*
+             */
              URL[] filePath = new URL[classes.size()];
              for (int i = 0; i < classes.size(); ++i){
                  File classPath = classes.get(i);
                  filePath[i] = classPath.toURI().toURL();
              }
 
-             ClassLoader loader = new URLClassLoader(filePath);
+            URL[] classesRoot = new URL[] {new File(Prefs.<String>getPreference(Prefs.CLASS_HOME)).toURI().toURL()};
+
+             URLClassLoader loader = new URLClassLoader(classesRoot);
              ArrayList<Class<?>> toSecure = new ArrayList<>();
              ArrayList<String> securableObjects = (ArrayList) Prefs.getInstance().getPrefrenece(Prefs.SECURED_CLASSES);
 
@@ -125,30 +129,39 @@ public class Builder {
             for (int i = 0; i < tempFiles.length; ++i){
                 tempUrls[i] = tempFiles[i].toURI().toURL();
             }
-            ClassLoader tempLoader = new URLClassLoader(tempUrls);
+            URL[] tempRoot = new URL[] {new File(tempStorage).toURI().toURL()};
+            ClassLoader tempLoader = new URLClassLoader(tempRoot);
 
             generateStubs(toSecure, tempLoader);
 
             String projectSource = Prefs.getPreference(Prefs.PROJECT_SOURCE);
             compileProjects(projectSource, tempSrc);
+            packageProjects();
         }
     }
 
     public static void compileProjects(String securePath, String insecurePath) throws IOException, Prefs.NoSuchPreferenceException, InterruptedException {
-        String secureOutput = tempStorage + "secureCompile";
-        String insecureOutput = tempStorage + "insecureCompile";
         compileProject(securePath, secureOutput);
         compileProject(insecurePath, insecureOutput);
+    }
 
+    public static void packageProjects(){
         try {
             String saveLocation = Prefs.getPreference(Prefs.OUTPUT_DIR);
             String secureOutputLoc = saveLocation + File.separator + Prefs.getPreference(Prefs.SECURE_OUTPUT);
             String insecureOutputLoc = saveLocation + File.separator + Prefs.getPreference(Prefs.INSECURE_OUTPUT);
 
-
             packageJar(secureOutput, secureOutputLoc);
             packageJar(insecureOutput, insecureOutputLoc);
+
         } catch (Prefs.NoSuchPreferenceException e) {
+            //todo: Preference was not loaded, encourage user to check that it's included
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            //todo: something happened during the waitFor() w/ processbuilder.
+            e.printStackTrace();
+        } catch (IOException e) {
+            //todo: Problems communicating with runtime
             e.printStackTrace();
         }
     }
@@ -220,6 +233,17 @@ public class Builder {
         verifyDir(tempOut);
         verifyDir(tempSrc);
         verifyDir(stubsDir);
+    }
+
+    public static void verifyFilePath(String path){
+        //assumes a file on the end of the string
+        String[] components = path.split(File.separator);
+        String currPath = "";
+        for (int i = 0; i < components.length - 1; ++i){
+            String component = components[i];
+            currPath += File.separator + component;
+            verifyDir(currPath);
+        }
     }
 
     public static void verifyDir(String path){

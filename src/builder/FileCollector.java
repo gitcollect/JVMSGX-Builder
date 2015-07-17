@@ -50,7 +50,7 @@ public class FileCollector {
         return getPathForClass(clazz);
     }
 
-    public void performMove() throws IOException {
+    public void performMove() throws IOException, Prefs.NoSuchPreferenceException {
         for (String filePath : this.files){
 
             System.out.print("Moving file: " + filePath + " ");
@@ -60,7 +60,9 @@ public class FileCollector {
             String filename = delimited[delimited.length - 1];
 
             //open stream to new file
-            String path = this.newFolder + filename;
+            String relativePath = getRelativePath(Prefs.<String>getPreference(Prefs.CLASS_HOME), filePath);
+            String path = this.newFolder + relativePath;
+            Builder.verifyFilePath(path);
             System.out.println("To new directory: " + path);
             File newFile = new File(path);
             FileOutputStream fos = new FileOutputStream(newFile);
@@ -75,6 +77,10 @@ public class FileCollector {
         }
     }
 
+    public String getRelativePath(String parent, String file){
+        return file.substring(parent.length());
+    }
+
     public static void main(String[] args){
         //test main.  moves files to desktop
         String desktopDir = System.getProperty("user.home") + File.separator + "Desktop";
@@ -87,6 +93,8 @@ public class FileCollector {
         try {
             collector.performMove();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Prefs.NoSuchPreferenceException e) {
             e.printStackTrace();
         }
     }
