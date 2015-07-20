@@ -57,14 +57,6 @@ public class Signer {
             return;
         }
 
-        /*
-        Console console = System.console();
-        if (console == null) {
-            System.out.println("Couldn't get a reference to the console. \nSigning aborted");
-            return;
-        }
-        char storePassword[] = System.console().readPassword("Enter Passphrase for keystore: ");
-        */
         String tsa = Prefs.getPreference(Prefs.TSA);
         boolean hasTSA = !tsa.equals("NONE");
         int length = hasTSA ? 5 : 3;

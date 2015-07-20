@@ -22,6 +22,55 @@ public class FileCollector {
         this((String) Prefs.getInstance().getPrefrenece(Prefs.OUTPUT_DIR));
     }
 
+    public static void verifyFilePath(String path){
+        //assumes a file on the end of the string
+        String[] components = path.split(File.separator);
+        String currPath = "";
+        for (int i = 0; i < components.length - 1; ++i){
+            String component = components[i];
+            currPath += File.separator + component;
+            verifyDir(currPath);
+        }
+    }
+
+    public static void verifyDir(String path){
+        File dir = new File(path);
+        if (dir.isDirectory() || !dir.exists()){
+            dir.mkdir();
+        }
+    }
+
+    public static ArrayList<File> getAllFilesInDir(File file, String extension){
+        File[] allFiles = file.listFiles();
+        ArrayList<File> files = new ArrayList<>();
+        if (allFiles == null){
+            return files;
+        }
+        for (File f : allFiles){
+            if (f.isFile()) {
+                String name = f.getName();
+                if (name.endsWith(extension)) {
+                    files.add(f);
+                }
+            }
+            if (f.isDirectory()){
+                files.addAll(getAllFilesInDir(f, extension));
+            }
+        }
+
+        return files;
+    }
+
+    public static void replaceFile(String name, File file) throws IOException {
+        File javaFile = Builder.getJavaFileBySimpleName(name);
+        if (javaFile == null){
+            System.out.println("no file named: " + name);
+        }
+
+        FileUtils.forceDelete(javaFile);
+        FileUtils.copyFile(file, javaFile);
+    }
+
     public void collect(String file, boolean local){
         if (local){
             file = this.workingDirectory + File.separator + file;
@@ -52,32 +101,15 @@ public class FileCollector {
 
     public void performMove() throws IOException, Prefs.NoSuchPreferenceException {
         for (String filePath : this.files){
-
-            System.out.print("Moving file: " + filePath + " ");
-
-            //get file name
-            String[] delimited = filePath.split(File.separator);
-            String filename = delimited[delimited.length - 1];
-
-            //open stream to new file
             String relativePath = getRelativePath(Prefs.<String>getPreference(Prefs.CLASS_HOME), filePath);
             String path = this.newFolder + relativePath;
-            Builder.verifyFilePath(path);
-            System.out.println("To new directory: " + path);
-            File newFile = new File(path);
-            FileOutputStream fos = new FileOutputStream(newFile);
+            verifyFilePath(path);
 
-            //get current file and perform copy
-            File currentFile = new File(filePath);
-            FileUtils.copyFile(currentFile, fos);
-
-            //cleanup
-            fos.flush();
-            fos.close();
+            move(path, filePath);
         }
     }
 
-    public String getRelativePath(String parent, String file){
+    public static String getRelativePath(String parent, String file){
         return file.substring(parent.length());
     }
 
