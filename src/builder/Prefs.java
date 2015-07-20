@@ -16,6 +16,7 @@ public class Prefs {
                                 INSECURE_OUTPUT = "outputInsecure",
                                 CRYPTO = "crypto",
                                 SIGNATURE = "Signature",
+                                TSA = "TSA",
                                 SECURED_CLASSES = "secureClasses",
                                 PROJECT_SOURCE = "Source",
                                 CLASS_HOME = "ClassHome",

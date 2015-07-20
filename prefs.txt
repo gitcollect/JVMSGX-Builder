@@ -5,6 +5,7 @@ outputDir : /Users/John/Desktop/compileTests
 Source: /Users/John/jvm-sgx/Examples/src
 ClassHome : /Users/John/jvm-sgx/Examples/out/production/Examples/
 Signature : oscarStore
-SignedName : John
+SignedName : oscar
+TSA : NONE
 secureClasses:
 secured.SecuredTalker

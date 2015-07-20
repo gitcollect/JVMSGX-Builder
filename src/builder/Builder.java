@@ -25,7 +25,7 @@ public class Builder {
         if (executionMode == 0){
             //todo: Show help
             //temp: Load in local pref file
-            System.out.println("Please include a file.  builder.jar <build file>");
+            System.out.println("Please include a file.  builder.jar <build_file.txt>");
         }
 
         else if (executionMode == 1) {
@@ -201,30 +201,13 @@ public class Builder {
         String[] array = new String[args.size()];
         execCommand(args.toArray(array), System.getProperty("user.dir"));
 
-        String signature = Prefs.getPreference(Prefs.SIGNATURE);
-        signJar(output, signature);
-        encryptJar(output);
+        String alias = Prefs.getPreference(Prefs.SIG_NAME);
+        signJar(output, alias);
     }
 
-    public static void signJar(String jar, String signstore) throws IOException, InterruptedException {
+    public static void signJar(String jar, String alias) throws IOException, InterruptedException, Prefs.NoSuchPreferenceException {
         //todo: Sign the jar
-        /*
-        ArrayList<String> signCommand = new ArrayList<>();
-        signCommand.add("jarsigner");
-        signCommand.add(jar);
-        signCommand.add("-keystore");
-        signCommand.add(signstore);
-        signCommand.add("");
-        System.out.println("Sign command: " + signCommand);
-        String[] array = new String[signCommand.size()];
-        execCommand(signCommand.toArray(array), System.getProperty("user.dir"));
-        */
-    }
-
-    public static void encryptJar(String jar) throws Prefs.NoSuchPreferenceException {
-        //todo: Encrypt the JAR against the users prefered encryption type
-        String encryption = Prefs.getPreference(Prefs.CRYPTO);
-        System.out.println("Would encrypt the jar with " + encryption);
+        Signer.sign(jar, alias);
     }
 
     public static void setup(){
@@ -300,6 +283,16 @@ public class Builder {
     public static int validateArgs(String[] args){
         if (args.length == 1){
             //todo: validate that folder exists
+            String prefsFile = args[0];
+            File argsFile = new File(prefsFile);
+            if (!argsFile.exists()){
+                System.out.println("The provided file " + prefsFile + " does not exist");
+                return 0;
+            }
+            else if (!argsFile.getAbsolutePath().endsWith(".txt")){
+                System.out.println("Please include a text file.");
+                return 0;
+            }
         }
         else if (args.length == 2){
             //todo: validate folder, and make sure all args exist
@@ -356,7 +349,9 @@ public class Builder {
         builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         builder.redirectError(ProcessBuilder.Redirect.INHERIT);
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        builder.directory(new File(directory));
+        if (!directory.equals("")) {
+            builder.directory(new File(directory));
+        }
         Process someProcess = builder.start();
         someProcess.waitFor();
     }
