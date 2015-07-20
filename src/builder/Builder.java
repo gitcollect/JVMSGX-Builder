@@ -1,5 +1,7 @@
 package builder;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -93,6 +95,8 @@ public class Builder {
             generateStubs(toSecure, tempLoader);
             Compiler.compileProjects(projectSource, tempSrc);
             Compiler.packageProjects();
+
+            cleanupTemp();
         }
     }
 
@@ -152,7 +156,6 @@ public class Builder {
 
     public static int validateArgs(String[] args){
         if (args.length == 1){
-            //todo: validate that folder exists
             String prefsFile = args[0];
             File argsFile = new File(prefsFile);
             if (!argsFile.exists()){
@@ -160,26 +163,12 @@ public class Builder {
                 return 0;
             }
             else if (!argsFile.getAbsolutePath().endsWith(".txt")){
-                System.out.println("Please include a text file.");
+                System.out.println("Please include a text file with preferences.  Please see the documentation for more information");
                 return 0;
             }
         }
-        else if (args.length == 2){
-            //todo: validate folder, and make sure all args exist
-        }
 
         return args.length;
-    }
-
-    public static boolean containsInterface(String name, Class<?> clazz){
-        Class<?>[] interfaces = clazz.getInterfaces();
-        for (int i = 0; i < interfaces.length; ++i){
-            Class<?> curr = interfaces[i];
-            if (curr.getName().contains(name)){
-                return true;
-            }
-        }
-        return false;
     }
 
     public static void execCommand(String[] command, String directory) throws IOException, InterruptedException {
@@ -194,5 +183,9 @@ public class Builder {
         }
         Process someProcess = builder.start();
         someProcess.waitFor();
+    }
+
+    public static void cleanupTemp() throws IOException {
+        FileUtils.deleteDirectory(new File(tempDir));
     }
 }
