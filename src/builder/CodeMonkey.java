@@ -37,23 +37,33 @@ public class CodeMonkey {
 
     public String getMethodStub(Method method){
         int modifiers = method.getModifiers();
-        if (Modifier.isFinal(modifiers) || !method.getDeclaringClass().equals(definition)){
+        if (!method.getDeclaringClass().equals(definition)){
             //conditions that will be covered by inheritance.
             return "";
         }
-        String methodBody = "\t";
+        String methodBody = "\t" + getMethodHeader(method, modifiers);
+
+        if (Modifier.isAbstract(modifiers) || Modifier.isNative(modifiers)){
+            methodBody += ";";
+        }
+        else {
+            methodBody += getMethodBody(method);
+        }
+
+        return methodBody;
+    }
+
+    public String getMethodHeader(Method method, int modifiers){
+        String methodBody = "";
 
         methodBody += Modifier.toString(modifiers) + " ";
 
         methodBody += method.getReturnType().getCanonicalName() + " ";
         methodBody += method.getName() + "(";
 
-        //generate parameters
         Class<?>[] parameterTypes = method.getParameterTypes();
-        if (parameterTypes.length == 1){
 
-        }
-        else if (parameterTypes.length > 1){
+        if (parameterTypes.length > 0){
             methodBody += parameterTypes[0].getCanonicalName() + " arg0";
             for (int i = 1; i < parameterTypes.length; ++i){
                 methodBody += ", ";
@@ -64,7 +74,6 @@ public class CodeMonkey {
 
         methodBody += ")";
 
-        // add exceptions
         Class<?>[] exceptions = method.getExceptionTypes();
         if (exceptions.length > 0){
             methodBody += " throws " + exceptions[0].getCanonicalName();
@@ -74,30 +83,36 @@ public class CodeMonkey {
             }
         }
 
-        if (Modifier.isAbstract(modifiers) || Modifier.isNative(modifiers)){
-            methodBody += ";";
+        return methodBody;
+    }
+
+    public String getMethodBody(Method method){
+        String methodBody = "";
+        methodBody += " {";
+
+        if (method.getReturnType() == void.class || method.getReturnType() == Void.class){
+            methodBody += " }\n";
         }
         else {
-            methodBody += " {";
+            Class<?> returnType = method.getReturnType();
+            methodBody += " return ";
 
-            if (method.getReturnType() == void.class || method.getReturnType() == Void.class){
-                methodBody += " }\n";
+            if (returnType == boolean.class){
+                methodBody += "false\n";
+            }
+            else if (isPrimitiveNumber(returnType)){
+                methodBody += "0";
             }
             else {
-                Class<?> returnType = method.getReturnType();
-                if (returnType == boolean.class){
-                    methodBody += " return false; }\n";
-                }
-                else if (returnType == int.class || returnType == float.class || returnType == double.class || returnType == long.class || returnType == short.class){
-                    methodBody += " return 0; }\n";
-                }
-                else {
-                    methodBody += " return null; }\n";
-                }
-
+                methodBody += "null";
             }
+            methodBody += "; }\n";
         }
         return methodBody;
+    }
+
+    public boolean isPrimitiveNumber(Class<?> clazz){
+        return clazz == int.class || clazz == float.class || clazz == double.class || clazz == long.class || clazz == short.class;
     }
 
     public String getPropertyStub(Field field){
@@ -111,9 +126,9 @@ public class CodeMonkey {
     }
 
     public String getClassHeader(){
-        //setup package if it exists
         String packageGroup = this.definition.getPackage().getName();
         String header = "package " + packageGroup + ";\n";
+
         header += Modifier.toString(this.definition.getModifiers()) + " class " + this.definition.getSimpleName() + " extends " + definition.getSuperclass().getCanonicalName();
         if (definition.getInterfaces().length > 0){
             Class<?>[] interfaces = definition.getInterfaces();
@@ -138,25 +153,13 @@ public class CodeMonkey {
 
     public void createStub(){
         String path = this.outputFolder + File.separator;
-        File outputFolder = new File(path);
-        if (!outputFolder.exists()){
-            outputFolder.mkdir();
-        }
+        FileCollector.verifyDir(path);
 
         try {
             FileWriter writer = openWriter(path + outputFileName);
 
-            writer.write(getClassHeader());
-
-            for (Field f : this.definition.getFields()){
-                writer.write(getPropertyStub(f));
-            }
-            writer.write("\n");
-            for (Method m : this.definition.getMethods()){
-                writer.write(getMethodStub(m));
-            }
-
-            writer.write(getClassFooter());
+            String classData = createStubAsString();
+            writer.write(classData);
 
             writer.flush();
             writer.close();
@@ -209,6 +212,12 @@ public class CodeMonkey {
 
         public String getMyStr(){
             return myStr;
+        }
+        public MySampleClass doSomething(MySampleClass a, MySampleClass b){
+            return new MySampleClass();
+        }
+        public final String getName(){
+            return "My name";
         }
 
         public MySampleClass mutateClass(){

@@ -61,6 +61,7 @@ public class FileCollector {
         return files;
     }
 
+    //careful with this one.  Overwrites data super easily.
     public static void replaceFile(String name, File file) throws IOException {
         File javaFile = Builder.getJavaFileBySimpleName(name);
         if (javaFile == null){

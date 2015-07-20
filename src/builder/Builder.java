@@ -17,15 +17,14 @@ public class Builder {
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, Prefs.NoSuchPreferenceException, NoSuchFieldException, IllegalAccessException, InterruptedException {
         int executionMode = validateArgs(args);
-        setup(args);
 
         if (executionMode == 0){
-            //todo: Show help
-            //temp: Load in local pref file
             System.out.println("Please include a file.  builder.jar <build_file.txt>");
         }
 
         else if (executionMode == 1) {
+            setup(args);
+
             String projectSource = Prefs.getPreference(Prefs.PROJECT_SOURCE);
             File libsFolder = new File(new File(Prefs.<String>getPreference(Prefs.PROJECT_SOURCE)).getParent() + File.separator + "lib");
             String srcPath = (String) Prefs.getInstance().getPrefrenece(Prefs.PROJECT_SOURCE);

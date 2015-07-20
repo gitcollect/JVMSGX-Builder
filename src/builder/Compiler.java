@@ -40,8 +40,10 @@ public class Compiler {
         args.add("-Xlint:unchecked");
         args.add("-d");
         args.add(output);
-        args.add("-cp");
-        args.add(Builder.libsString);
+        if (!Builder.libsString.equals("")) {
+            args.add("-cp");
+            args.add(Builder.libsString);
+        }
 
         for (File classFile : projectSourceFiles){
             args.add(classFile.getAbsolutePath());
