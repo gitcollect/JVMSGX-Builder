@@ -31,7 +31,7 @@ public class Prefs {
         preferences = new HashMap<>();
     }
 
-    public void loadPrefs(String filePath) throws FileNotFoundException, MisformattedPreferences {
+    public void loadPrefs(String filePath) throws FileNotFoundException, MisformattedPreferenceException {
         File prefsFile = new File(filePath);
         Scanner reader = new Scanner(prefsFile);
         String line;
@@ -58,7 +58,7 @@ public class Prefs {
                 preferences.put(values[0].replace(" ", ""), values[1].replace(" ", ""));
             }
             else {
-                throw new MisformattedPreferences();
+                throw new MisformattedPreferenceException();
             }
         } while(reader.hasNext());
         preferences.put(SECURED_CLASSES, securedClasses);
@@ -74,7 +74,7 @@ public class Prefs {
         }
     }
 
-    public static class MisformattedPreferences extends Exception{
+    public static class MisformattedPreferenceException extends Exception{
 
     }
 

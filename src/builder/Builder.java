@@ -111,10 +111,10 @@ public class Builder {
             Prefs.getInstance().loadPrefs(args[0]); //todo: Change to args[0] for production-esk dev
             System.out.println("prefs loaded: " + args[0]);
         } catch (FileNotFoundException e) {
-            System.out.println(args[0] + " is not a file.  Please provide a prefereneces file");
+            System.out.println(args[0] + " is not a file.  Please provide a preferences file");
             e.printStackTrace();
             return;
-        } catch (Prefs.MisformattedPreferences misformattedPreferences) {
+        } catch (Prefs.MisformattedPreferenceException misformattedPreferences) {
             System.out.println("there was a problem reading in your preferences file");
             misformattedPreferences.printStackTrace();
             return;
